@@ -105,7 +105,15 @@ tab_panel_facet <- tabPanel(
     choices = cnf$choices$facets
   ),
   selectInput("facet_row", "Facet Row", choices = ""),
-  selectInput("facet_col", "Facet Column", choices = "")
+  selectInput("facet_col", "Facet Column", choices = ""),
+  prettySwitch(inputId = "facet_free_x",
+               label = "Free X axis scale",
+               value = FALSE,
+               status = "primary", slim = TRUE),
+  prettySwitch(inputId = "facet_free_y",
+               label = "Free Y axis scale",
+               value = FALSE,
+               status = "primary", slim = TRUE)
 )
 
 # labels -----------------------------------------------------------------------
