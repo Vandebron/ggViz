@@ -30,33 +30,36 @@ mod_vars_cont_fcts_ui <- function(id){
 #'  mod_vars_cont_fcts Server Function
 #'
 #' @noRd 
-mod_vars_cont_fcts_server <- function(id, r) {
+mod_vars_cont_fcts_server <- function(id, input_list) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
-    observeEvent(r$initial$df, {
+    observeEvent(input_list()$df, {
       updateMultiInput(session, "which_cat",
-                       choices = names(r$initial$df),
-                       selected = names(purrr::keep(r$initial$df, is_categorical))
+                       choices = names(input_list()$df),
+                       selected = input_list()$cate_vars
       )
     })
     
-    observeEvent(input$which_cat, {
+    final_list <- eventReactive(input$which_cat, {
       
-      final_vars_cont <- names(r$initial$df)[!(names(r$initial$df) %in% input$which_cat)]
-      final_vars_cate <- input$which_cat
+      final_cont_vars <- names(input_list()$df)[!(names(input_list()$df) %in% input$which_cat)]
+      final_cate_vars <- input$which_cat
       
       df_final <- dplyr::mutate_at(
-        r$initial$df,
-        vars(r$final_vars_cate), as.factor
+        input_list()$df,
+        input_list()$cate_vars,
+        as.factor
         )
       
-      r$final <- list(
+      list(
         df = df_final,
-        vars_cont = final_vars_cont,
-        vars_cate = final_vars_cate
+        cont_vars = final_cont_vars,
+        cate_vars = final_cate_vars
         )
       })
+    
+    final_list
     
     })
 }

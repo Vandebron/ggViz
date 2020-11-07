@@ -31,14 +31,17 @@ mod_import_data_ui <- function(id){
 #'  mod_import_data Server Function
 #'
 #' @noRd 
-mod_import_data_server <- function(id, r) {
+mod_import_data_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
     cnf <- config::get(file = get_inst_file("config.yml"))
     
+    df <- reactiveVal()
+    
     observeEvent(input$preload_select, {
-      r$initial$df <- eval(cnf$datasets[[input$preload_select]])
+      x <- eval(cnf$datasets[[input$preload_select]])
+      df(x)
     })
     
     observeEvent(input$file_input, {
@@ -46,7 +49,7 @@ mod_import_data_server <- function(id, r) {
       file <- input$file_input$datapath
       extension <- tools::file_ext(file)
       
-      df <- if (extension == "csv"){
+      x <- if (extension == "csv"){
         readr::read_csv(file)
       } else if (extension %in% c("xls", "xlsx")){
         readxl::read_excel(file)
@@ -58,8 +61,20 @@ mod_import_data_server <- function(id, r) {
       
       req(extension %in% c("csv", "xls", "xlsx"))
       
-      r$initial$df <- df
+      df(x)
     })
+    
+    reactive({
+      
+      original_cate_vars <- names(purrr::keep(df(), is_categorical))
+      original_cont_vars <- names(df())[!(names(df()) %in% original_cate_vars)]
+      
+      list(
+        df = df(),
+        cont_vars = original_cont_vars,
+        cate_vars = original_cate_vars
+        )
+      })
     
     })
 }

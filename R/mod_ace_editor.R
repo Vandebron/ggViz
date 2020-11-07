@@ -25,7 +25,7 @@ mod_ace_editor_ui <- function(id){
 #'  mod_ace_editor Server Function
 #'
 #' @noRd 
-mod_ace_editor_server <- function(id, r, code) {
+mod_ace_editor_server <- function(id, input_list, code) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
@@ -43,7 +43,7 @@ mod_ace_editor_server <- function(id, r, code) {
       
       rlang::eval_tidy(
         rlang::parse_expr(input$ace_graph), 
-        data = list(df = r$final$df), 
+        data = list(df = input_list()$df), 
         env = generate_safe_env()
       )
     })

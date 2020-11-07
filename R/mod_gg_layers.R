@@ -190,7 +190,7 @@ mod_gg_layers_ui <- function(id){
 #'  mod_gg_layers Server Function
 #'
 #' @noRd 
-mod_gg_layers_server <- function(id, r) {
+mod_gg_layers_server <- function(id, input_list) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
@@ -469,10 +469,10 @@ mod_gg_layers_server <- function(id, r) {
                       anim = TRUE)
     })
     
-    observeEvent(r$final,{
+    observeEvent(input_list(),{
       
-      choices_cont <- from_vars_to_choice_list(r$final$vars_cont)
-      choices_cate <-  from_vars_to_choice_list(r$final$vars_cate)
+      choices_cont <- from_vars_to_choice_list(input_list()$cont_vars)
+      choices_cate <-  from_vars_to_choice_list(input_list()$cate_vars)
       
       updateSelectInput(session, "x_var", choices = list(
         Continuous = choices_cont,

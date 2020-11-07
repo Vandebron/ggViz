@@ -19,13 +19,13 @@ mod_out_table_ui <- function(id){
 #'  mod_out_table Server Function
 #'
 #' @noRd 
-mod_out_table_server <- function(id, r) {
+mod_out_table_server <- function(id, input_list) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
     output$out_table <- DT::renderDT({
       DT::datatable(
-        r$final$df,
+        input_list()$df,
         rownames = FALSE,
         class = "row-border",
         options = list(
