@@ -113,8 +113,25 @@ server <- function(input, output, session) {
 
     # facet ----
     facet_code <- if (input$facet_row != "." || input$facet_col != "."){
+      
+      facet_args <- exprs(!!sym(input$facet_row) ~ !!sym(input$facet_col))
+      
+      x_free <- input$facet_free_x
+      y_free <- input$facet_free_y
+      
+      scales <- case_when(
+        sum(x_free, y_free) == 0 ~ "fixed",
+        sum(x_free, y_free) == 2 ~ "free",
+        x_free == TRUE && y_free == FALSE ~ "free_x",
+        x_free == FALSE && y_free == TRUE ~ "free_y"
+      )
+      
+      if (scales != "fixed"){
+        facet_args$scales = expr(!!scales)
+      }
+      
       expr(
-        (!!sym(input$facet_type))(!!sym(input$facet_row) ~ !!sym(input$facet_col))
+        (!!sym(input$facet_type))(!!!facet_args)
       )
     }
 
@@ -268,8 +285,9 @@ server <- function(input, output, session) {
     
     eval_tidy(
       parse_expr(input$ace_graph), 
-      data = list(df = df_final()), 
-      env = safe_ggplot_env
+      data = list(df = df_final())
+      # , 
+      # env = safe_ggplot_env
       )
   })
   

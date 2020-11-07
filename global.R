@@ -3,6 +3,7 @@ library(shinydashboard)
 library(shinyjs)
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 library(readxl)
 library(stringr)
 library(readr)
@@ -27,15 +28,24 @@ safe_ggplot_env <- {
     getGroupMembers("Summary"),
     "{", "(", "ifelse", "::", "c", "[", "[[", "$"
   )
-  
   safe_base_functions <- 
     map(safe_base_functions_names, ~ get(., "package:base")) %>% 
-    set_names(safe_base_functions_names)
+    set_names(safe_base_functions_names) 
+  
+  pipe_function <- list(`%>%` = get("%>%", "package:dplyr"))
   
   ggplot_functions <- as.list(environment(ggplot2::ggplot))
+  dplyr_functions <- as.list(environment(dplyr::select))
+  tidyr_functions <- as.list(environment(tidyr::pivot_longer))
   
   rlang::new_environment(
-    data = c(safe_base_functions, ggplot_functions), 
+    data = c(
+      safe_base_functions,
+      pipe_function,
+      ggplot_functions,
+      dplyr_functions,
+      tidyr_functions
+      ), 
     parent = rlang::empty_env()
   )
 }
