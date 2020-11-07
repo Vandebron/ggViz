@@ -2,16 +2,15 @@
 #'
 #' @export
 #' @importFrom shiny shinyApp
-#' @importFrom methods getGroupMembers
 run_app <- function() {
   
   safe_ggplot_env <- {
     safe_base_functions_names <- c(
-      getGroupMembers("Math"),
-      getGroupMembers("Arith"),
-      getGroupMembers("Compare"),
-      getGroupMembers("Logic"),
-      getGroupMembers("Summary"),
+      methods::getGroupMembers("Math"),
+      methods::getGroupMembers("Arith"),
+      methods::getGroupMembers("Compare"),
+      methods::getGroupMembers("Logic"),
+      methods::getGroupMembers("Summary"),
       "{", "(", "ifelse", "::", "c", "[", "[[", "$"
     )
     safe_base_functions <- 

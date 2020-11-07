@@ -34,5 +34,6 @@ Imports:
     config,
     magrittr,
     methods,
-    pkgload
+    pkgload,
+    dplyr
 RoxygenNote: 7.0.1
