@@ -196,10 +196,11 @@ mod_gg_layers_server <- function(id, input_list) {
     
     cnf <- config::get(file = get_inst_file("config.yml"))
     
-    code_graph <- reactive({
-      
-      geom_is_filled <- input$viztype %in% cnf$specials$geoms$require_fill
-      
+    geom_is_filled <- reactive(input$viztype %in% cnf$specials$geoms$require_fill)
+    
+    input_viztype <- reactive(input$viztype)
+    
+    first_line_code <- reactive({
       # aesthetics ----
       # a list of expressions for mapping of `x`, `y`, `color`, `shape`, `size`
       aesthetics <- rlang::exprs(y = !!sym(input$y_var))
@@ -211,59 +212,60 @@ mod_gg_layers_server <- function(id, input_list) {
       }
       
       if (input$group != "NA") {
-        if (geom_is_filled){
+        if (geom_is_filled()){
           aesthetics$fill <- expr(!!sym(input$group))
         } else {
           aesthetics$color <- expr(!!sym(input$group))
         }
       }
       
-      if ((input$viztype %in% cnf$specials$geoms$allow_size)
+      if ((input_viztype() %in% cnf$specials$geoms$allow_size)
           && (input$size != "NA")){
         aesthetics$size <- expr(!!sym(input$size))
       }
       
-      if ((input$viztype %in% cnf$specials$geoms$allow_shape)
+      if ((input_viztype() %in% cnf$specials$geoms$allow_shape)
           && (input$shape != "NA")){
         aesthetics$shape <- expr(!!sym(input$shape))
       }
       
-      if (input$viztype %in% cnf$specials$geoms$deactivate_y){
+      if (input_viztype() %in% cnf$specials$geoms$deactivate_y){
         showNotification("Histograms do not use the Y axis")
         aesthetics$y <- NULL
       }
       
-      first_line_code <- expr(
+      expr(
         ggplot2::ggplot(df, aes(!!!aesthetics))
       )
+    })
+    
+    geom_code <- reactive({
+      geom_args <- rlang::exprs()
       
-      # geom ----
-      geom_code <- {
-        geom_args <- rlang::exprs()
-        
-        if (input$viztype %in% cnf$specials$geoms$allow_bins){
-          geom_args$bins <- expr(!!input$bins)
-        } 
-        
-        if (input$viztype %in% cnf$specials$geoms$allow_position){
-          geom_args$position <- expr(!!input$position)
-        } 
-        
-        if (input$alpha_05 == TRUE) geom_args$alpha <- expr(0.5)
-        
-        expr(
-          (!!sym(input$viztype))(!!!geom_args)
-        )
-      }
+      if (input_viztype() %in% cnf$specials$geoms$allow_bins){
+        geom_args$bins <- expr(!!input$bins)
+      } 
       
-      # stats ----
-      stats_code <- if ((input$viztype %in% cnf$specials$geoms$allow_regression)
+      if (input_viztype() %in% cnf$specials$geoms$allow_position){
+        geom_args$position <- expr(!!input$position)
+      } 
+      
+      if (input$alpha_05 == TRUE) geom_args$alpha <- expr(0.5)
+      
+      expr(
+        (!!sym(input_viztype()))(!!!geom_args)
+      )
+    })
+    
+    stats_code <- reactive({
+      if ((input_viztype() %in% cnf$specials$geoms$allow_regression)
                         && (input$show_regression_line == TRUE)){
         expr(stat_smooth(method=!!input$smooth_func))
       }
-      
-      # facet ----
-      facet_code <- if (input$facet_row != "." || input$facet_col != "."){
+    })
+    
+    facet_code <- reactive({
+      if (input$facet_row != "." || input$facet_col != "."){
         
         facet_args <- rlang::exprs(!!sym(input$facet_row) ~ !!sym(input$facet_col))
         
@@ -285,56 +287,55 @@ mod_gg_layers_server <- function(id, input_list) {
           (!!sym(input$facet_type))(!!!facet_args)
         )
       }
+    })
+    
+    coord_code <- reactive({
+      coord_args <- rlang::exprs()
       
-      # coord ----
-      coord_code <- {
-        coord_args <- rlang::exprs()
-        
-        if (input$coord %in% cnf$specials$coord$allow_origin){
-          if (input$include_x_origin == TRUE){
-            coord_args$xlim <- expr(c(0,max(df[[!!input$x_var]])))
-          }
-          if (input$include_y_origin == TRUE){
-            coord_args$ylim <- expr(c(0,max(df[[!!input$y_var]])))
-          }
+      if (input$coord %in% cnf$specials$coord$allow_origin){
+        if (input$include_x_origin == TRUE){
+          coord_args$xlim <- expr(c(0,max(df[[!!input$x_var]])))
         }
-        
-        if (input$coord %in% cnf$specials$coord$allow_thetha){
-          coord_args$theta <- expr(!!input$polar_coord_type)
-        }
-        
-        if (input$coord == "coord_cartesian" && purrr::is_empty(coord_args)){
-          NULL
-        } else {
-          expr(
-            (!!sym(input$coord))(!!!coord_args)
-          )
+        if (input$include_y_origin == TRUE){
+          coord_args$ylim <- expr(c(0,max(df[[!!input$y_var]])))
         }
       }
       
-      # labs ----
-      labs_code <- {
-        labs_args <- rlang::exprs()
-        if (input$lab_title != "") labs_args$title <- expr(!!input$lab_title)
-        if (input$lab_x != "") labs_args$x <- expr(!!input$lab_x)
-        if (input$lab_y != "") labs_args$y <- expr(!!input$lab_y)
-        if (input$lab_caption != "") labs_args$caption <- expr(!!input$lab_caption)
-        
-        if (!purrr::is_empty(labs_args)){
-          expr(labs(!!!labs_args))
-        }
+      if (input$coord %in% cnf$specials$coord$allow_thetha){
+        coord_args$theta <- expr(!!input$polar_coord_type)
       }
       
-      # theme: style ----
-      theme_style_code <- if (input$theme_style != "theme_grey") {
+      if (input$coord == "coord_cartesian" && purrr::is_empty(coord_args)){
+        NULL
+      } else {
+        expr(
+          (!!sym(input$coord))(!!!coord_args)
+        )
+      }
+    })
+    
+    labs_code <- reactive({
+      labs_args <- rlang::exprs()
+      if (input$lab_title != "") labs_args$title <- expr(!!input$lab_title)
+      if (input$lab_x != "") labs_args$x <- expr(!!input$lab_x)
+      if (input$lab_y != "") labs_args$y <- expr(!!input$lab_y)
+      if (input$lab_caption != "") labs_args$caption <- expr(!!input$lab_caption)
+      
+      if (!purrr::is_empty(labs_args)){
+        expr(labs(!!!labs_args))
+      }
+    })
+    
+    theme_style_code <- reactive({
+      if (input$theme_style != "theme_grey") {
         expr(
           (!!sym(input$theme_style))()
         )
       }
-      
-      
-      # theme: palette ----
-      theme_palette_code <- if (input$group != "NA" && input$color_palette != "ggplot2 default") {
+    })
+    
+    theme_palette_code <- reactive({
+      if (input$group != "NA" && input$color_palette != "ggplot2 default") {
         palette_args <- rlang::exprs()
         
         custom_palettes <- purrr::flatten(cnf$palettes$custom)
@@ -355,7 +356,7 @@ mod_gg_layers_server <- function(id, input_list) {
         
         function_name <- paste(
           "scale", 
-          ifelse(geom_is_filled, "fill", "color"), 
+          ifelse(geom_is_filled(), "fill", "color"), 
           funcion_name_suffix, 
           sep = "_"
         )
@@ -364,48 +365,49 @@ mod_gg_layers_server <- function(id, input_list) {
           (!!sym(function_name))(!!!palette_args)
         )
       }
+    })
+    
+    theme_elements_code <- reactive({
+      theme_elements_args <- rlang::exprs()
       
-      # theme: elements ----
-      theme_elements_code <- {
-        theme_elements_args <- rlang::exprs()
-        
-        if (input$pos_legend != "right"){
-          theme_elements_args$legend.position <- expr(!!input$pos_legend)
-        } 
-        
-        if (input$show_gridlines == FALSE){
-          theme_elements_args$panel.grid.major <- expr(element_blank())
-          theme_elements_args$panel.grid.minor <- expr(element_blank())
-        }
-        
-        if (input$show_x_axis == FALSE){
-          theme_elements_args$axis.title.x <- expr(element_blank())
-          theme_elements_args$axis.text.x <- expr(element_blank())
-          theme_elements_args$axis.ticks.x <- expr(element_blank())
-        }
-        
-        if (input$show_y_axis == FALSE){
-          theme_elements_args$axis.title.y <- expr(element_blank())
-          theme_elements_args$axis.text.y <- expr(element_blank())
-          theme_elements_args$axis.ticks.y <- expr(element_blank())
-        }
-        
-        if (!purrr::is_empty(theme_elements_args)){
-          expr(theme(!!!theme_elements_args))
-        }
+      if (input$pos_legend != "right"){
+        theme_elements_args$legend.position <- expr(!!input$pos_legend)
+      } 
+      
+      if (input$show_gridlines == FALSE){
+        theme_elements_args$panel.grid.major <- expr(element_blank())
+        theme_elements_args$panel.grid.minor <- expr(element_blank())
       }
       
-      # ...build from parts...----
+      if (input$show_x_axis == FALSE){
+        theme_elements_args$axis.title.x <- expr(element_blank())
+        theme_elements_args$axis.text.x <- expr(element_blank())
+        theme_elements_args$axis.ticks.x <- expr(element_blank())
+      }
+      
+      if (input$show_y_axis == FALSE){
+        theme_elements_args$axis.title.y <- expr(element_blank())
+        theme_elements_args$axis.text.y <- expr(element_blank())
+        theme_elements_args$axis.ticks.y <- expr(element_blank())
+      }
+      
+      if (!purrr::is_empty(theme_elements_args)){
+        expr(theme(!!!theme_elements_args))
+      }
+    })
+    
+    code_graph <- reactive({
+
       all_layers_code <- list(
-        first_line_code,
-        geom_code,
-        facet_code,
-        stats_code,
-        coord_code,
-        labs_code,
-        theme_style_code,
-        theme_palette_code,
-        theme_elements_code
+        first_line_code(),
+        geom_code(),
+        facet_code(),
+        stats_code(),
+        coord_code(),
+        labs_code(),
+        theme_style_code(),
+        theme_palette_code(),
+        theme_elements_code()
       )
       
       all_layers_code %>% 
@@ -416,44 +418,44 @@ mod_gg_layers_server <- function(id, input_list) {
     
     observe({
       shinyjs::toggle("toggle_y_var",
-                      condition = !(input$viztype %in% cnf$specials$geoms$deactivate_y),
+                      condition = !(input_viztype() %in% cnf$specials$geoms$deactivate_y),
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_size",
-                      condition = input$viztype %in% cnf$specials$geoms$allow_size,
+                      condition = input_viztype() %in% cnf$specials$geoms$allow_size,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_shape",
-                      condition = input$viztype %in% cnf$specials$geoms$allow_shape,
+                      condition = input_viztype() %in% cnf$specials$geoms$allow_shape,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_position",
-                      condition = input$viztype %in% cnf$specials$geoms$allow_position,
+                      condition = input_viztype() %in% cnf$specials$geoms$allow_position,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_regression",
-                      condition = input$viztype %in% cnf$specials$geoms$allow_regression,
+                      condition = input_viztype() %in% cnf$specials$geoms$allow_regression,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_smooth_func",
-                      condition = (input$viztype %in% cnf$specials$geoms$allow_regression
+                      condition = (input_viztype() %in% cnf$specials$geoms$allow_regression
                                    && input$show_regression_line),
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_bins",
-                      condition = input$viztype %in% cnf$specials$geoms$allow_bins,
+                      condition = input_viztype() %in% cnf$specials$geoms$allow_bins,
                       anim = TRUE)
     })
 
@@ -470,43 +472,43 @@ mod_gg_layers_server <- function(id, input_list) {
     })
     
     observeEvent(input_list(),{
-      
+
       choices_cont <- from_vars_to_choice_list(input_list()$cont_vars)
       choices_cate <-  from_vars_to_choice_list(input_list()$cate_vars)
-      
+
       updateSelectInput(session, "x_var", choices = list(
         Continuous = choices_cont,
         Categorical = choices_cate,
         `Choose no variable` = list(NA)
       ))
-      
+
       updateSelectInput(
-        session, "y_var", 
+        session, "y_var",
         choices = list(Continuous = choices_cont),
         selected = ifelse(length(choices_cont) > 1, choices_cont[2], choices_cont[1])
       )
-      
+
       updateSelectInput(session, "group",  choices = list(
         `Choose no variable` = list(NA),
         Continuous = choices_cont,
         Categorical = choices_cate
       ))
-      
+
       updateSelectInput(session, "size",  choices = list(
         `Choose no variable` = list(NA),
         Continuous = choices_cont
       ))
-      
+
       updateSelectInput(session, "shape",  choices = list(
         `Choose no variable` = list(NA),
         Categorical = choices_cate
       ))
-      
+
       updateSelectInput(session, "facet_row",  choices = list(
         `Choose no variable` = list("NA" = "."),
         Categorical = choices_cate
       ))
-      
+
       updateSelectInput(session, "facet_col",  choices = list(
         `Choose no variable` = list("NA" = "."),
         Categorical = choices_cate
