@@ -27,75 +27,32 @@ app_server <- function(input, output, session) {
   
   # OUTPUT -----------------------------------------------------------------------
   # table -------
-  output$out_table <- DT::renderDT({
-    DT::datatable(
-      r_data$final$df,
-      rownames = FALSE,
-      class = "row-border",
-      options = list(
-        scrollX = TRUE,
-        pageLength = 8,
-        dom = "rtip"
-      )
-    )
-  })
+  
+  mod_out_table_server("x", r = r_data)
+  
   
   # graph -------
-  evaluated_graph <- eventReactive(input$ace_graph,{
-    
-    req(input$ace_graph)
-    
-    rlang::eval_tidy(
-      rlang::parse_expr(input$ace_graph), 
-      data = list(df = r_data$final$df), 
-      env = generate_safe_env()
-    )
-  })
   
-  output$out_ggplot <- renderPlot(evaluated_graph())
+  plot_to_output <- mod_ace_editor_server("x", r = r_data, code = code_graph)
+  
+  mod_out_plot_server("x", plot = plot_to_output)
+  mod_download_plot_server("x", plot = plot_to_output)
   
   # download pdf ------
-  output$download_plot_PDF <- downloadHandler(
-    filename = function(){
-      paste("figure_ggplotVIZ_", Sys.time(), ".pdf", sep = "")
-    },
-    content = function(file){
-      ggsave(file, 
-             evaluated_graph(), 
-             width = input$fig_width_download,
-             height = input$fig_height_download, 
-             units = "cm")
-    },
-    contentType = "application/pdf"
-  )
+  # output$download_plot_PDF <- downloadHandler(
+  #   filename = function(){
+  #     paste("figure_ggplotVIZ_", Sys.time(), ".pdf", sep = "")
+  #   },
+  #   content = function(file){
+  #     ggsave(file, 
+  #            evaluated_graph(), 
+  #            width = input$fig_width_download,
+  #            height = input$fig_height_download, 
+  #            units = "cm")
+  #   },
+  #   contentType = "application/pdf"
+  # )
   
-  # OBSERVERS --------------------------------------------------------------------
-  # update initial categorical / continuous vars in `which_cat` -----
-
-  
-  # output$text <- renderText({
-  #   jsonlite::toJSON(
-  #     list(
-  #       df_zero = r_data$df_zero,
-  #       df_initial = r_data$df_inital,
-  #       df_final = r_data$df_final
-  #     )
-  #   )
-  # })
-  
-  # update with output of `which_cat` -----------------------------
-  
-  
-  # update text in ACE editor -------
-  observeEvent(code_graph(), {
-    shinyAce::updateAceEditor(
-      session = session,
-      editorId = "ace_graph",
-      rlang::expr_text(code_graph())
-    )
-  })
-  
-  # toggle content in UI -------------
 
 
 }

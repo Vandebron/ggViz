@@ -8,39 +8,18 @@ app_ui <- function(request) {
   cnf <- config::get(file = get_inst_file("config.yml"))
   
   # BOXES ----------------------------------------------------------------
-  box_data_loaded <- 
-    box(width = 12, 
-        title = "Data loaded",
-        collapsible = TRUE, 
-        collapsed = FALSE,
-        DT::DTOutput("out_table")
-    )
+
   
-  box_code <- 
-    box(width = 8, 
-        title = "Code within", 
-        collapsible = TRUE, 
-        collapsed = TRUE,
-        shinyAce::aceEditor("ace_graph", height = 200, mode = "r", wordWrap = TRUE)
-    )
+  # box_code <- 
+  #   box(width = 8, 
+  #       title = "Code within", 
+  #       collapsible = TRUE, 
+  #       collapsed = TRUE,
+  #       shinyAce::aceEditor("ace_graph", height = 200, mode = "r", wordWrap = TRUE)
+  #   )
   
   box_download <- 
-    box(width = 4,
-        title = "Download",
-        collapsible = TRUE, 
-        collapsed = TRUE,
-        sliderInput("fig_height_download", 
-                    "Plot height", 
-                    min = 3, max = 30, value = 14, 
-                    step = 1, post = " cm"),
-        sliderInput("fig_width_download",
-                    "Plot width", 
-                    min = 3, max = 30, value = 14, 
-                    step = 1, post = " cm"),
-        downloadButton(
-          "download_plot_PDF", "Download"
-        )
-    )
+    
   
   # PUT TOGETHER -----------------------------------------------------------------
   dashboardPage(
@@ -55,12 +34,10 @@ app_ui <- function(request) {
                mod_gg_layers_ui("x")
         ),
         column(width = 8,
-               box_data_loaded,
-               box(width = 12,
-                   plotOutput("out_ggplot")
-               ),
-               box_code,
-               box_download
+               mod_out_table_ui("x"),
+               mod_out_plot_ui("x"),
+               mod_ace_editor_ui("x"),
+               mod_download_plot_ui("x")
         )
       )
     )
