@@ -34,23 +34,29 @@ mod_vars_cont_fcts_server <- function(id, r) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
-    observeEvent(r$df_initial, {
+    observeEvent(r$initial$df, {
       updateMultiInput(session, "which_cat",
-                       choices = names(r$df_initial),
-                       selected = names(purrr::keep(r$df_initial, is_categorical))
+                       choices = names(r$initial$df),
+                       selected = names(purrr::keep(r$initial$df, is_categorical))
       )
     })
     
     observeEvent(input$which_cat, {
       
-      r$final_vars_cont <- names(r$df_initial)[!(names(r$df_initial) %in% input$which_cat)]
-      r$final_vars_cate <- input$which_cat
+      final_vars_cont <- names(r$initial$df)[!(names(r$initial$df) %in% input$which_cat)]
+      final_vars_cate <- input$which_cat
       
-      r$df_final <- dplyr::mutate_at(
-        r$df_initial,
+      df_final <- dplyr::mutate_at(
+        r$initial$df,
         vars(r$final_vars_cate), as.factor
         )
-    })
+      
+      r$final <- list(
+        df = df_final,
+        vars_cont = final_vars_cont,
+        vars_cate = final_vars_cate
+        )
+      })
     
     })
 }

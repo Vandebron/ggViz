@@ -8,11 +8,6 @@ app_ui <- function(request) {
   cnf <- config::get(file = get_inst_file("config.yml"))
   
   # BOXES ----------------------------------------------------------------
-  box_upload <- mod_import_data_ui("x")
-
-  box_continuous_categorical <- mod_vars_cont_fcts_ui("x")
-    
-  
   box_data_loaded <- 
     box(width = 12, 
         title = "Data loaded",
@@ -49,15 +44,14 @@ app_ui <- function(request) {
   
   # PUT TOGETHER -----------------------------------------------------------------
   dashboardPage(
-    dashboardHeader(title = "ggplot VIZ"),
+    dashboardHeader(title = "ggVIZ"),
     dashboardSidebar(disable = TRUE),
     dashboardBody(
       shinyjs::useShinyjs(),
       fluidRow(
-        verbatimTextOutput("text"),
         column(width = 4,
-               box_upload,
-               box_continuous_categorical,
+               mod_import_data_ui("x"),
+               mod_vars_cont_fcts_ui("x"),
                mod_gg_layers_ui("x")
         ),
         column(width = 8,

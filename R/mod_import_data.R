@@ -38,7 +38,7 @@ mod_import_data_server <- function(id, r) {
     cnf <- config::get(file = get_inst_file("config.yml"))
     
     observeEvent(input$preload_select, {
-      r$df_initial <- eval(cnf$datasets[[input$preload_select]])
+      r$initial$df <- eval(cnf$datasets[[input$preload_select]])
     })
     
     observeEvent(input$file_input, {
@@ -58,7 +58,7 @@ mod_import_data_server <- function(id, r) {
       
       req(extension %in% c("csv", "xls", "xlsx"))
       
-      r$df_initial <- df
+      r$initial$df <- df
     })
     
     })

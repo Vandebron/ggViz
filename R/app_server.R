@@ -8,11 +8,8 @@ app_server <- function(input, output, session) {
   cnf <- config::get(file = get_inst_file("config.yml"))
   
   r_plot <- reactiveValues(
-    df_zero = mtcars, 
-    df_initial = mtcars, 
-    df_final = NULL,
-    final_vars_cont = NULL,
-    final_vars_cate = NULL
+    initial = NULL, 
+    final = NULL
   )
   
   
@@ -32,7 +29,7 @@ app_server <- function(input, output, session) {
   # table -------
   output$out_table <- DT::renderDT({
     DT::datatable(
-      r_plot$df_final,
+      r_plot$final$df,
       rownames = FALSE,
       class = "row-border",
       options = list(
@@ -50,7 +47,7 @@ app_server <- function(input, output, session) {
     
     rlang::eval_tidy(
       rlang::parse_expr(input$ace_graph), 
-      data = list(df = r_plot$df_final), 
+      data = list(df = r_plot$final$df), 
       env = generate_safe_env()
     )
   })
@@ -76,15 +73,15 @@ app_server <- function(input, output, session) {
   # update initial categorical / continuous vars in `which_cat` -----
 
   
-  output$text <- renderText({
-    jsonlite::toJSON(
-      list(
-        df_zero = r_plot$df_zero,
-        df_initial = r_plot$df_inital,
-        df_final = r_plot$df_final
-      )
-    )
-  })
+  # output$text <- renderText({
+  #   jsonlite::toJSON(
+  #     list(
+  #       df_zero = r_plot$df_zero,
+  #       df_initial = r_plot$df_inital,
+  #       df_final = r_plot$df_final
+  #     )
+  #   )
+  # })
   
   # update with output of `which_cat` -----------------------------
   

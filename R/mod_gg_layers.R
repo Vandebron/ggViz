@@ -469,10 +469,10 @@ mod_gg_layers_server <- function(id, r) {
                       anim = TRUE)
     })
     
-    observeEvent(r$df_final,{
+    observeEvent(r$final,{
       
-      choices_cont <- from_vars_to_choice_list(r$final_vars_cont)
-      choices_cate <-  from_vars_to_choice_list(r$final_vars_cate)
+      choices_cont <- from_vars_to_choice_list(r$final$vars_cont)
+      choices_cate <-  from_vars_to_choice_list(r$final$vars_cate)
       
       updateSelectInput(session, "x_var", choices = list(
         Continuous = choices_cont,
