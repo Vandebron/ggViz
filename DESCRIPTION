@@ -16,3 +16,24 @@ Description:
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Imports: 
+    shiny,
+    shinydashboard,
+    shinyjs,
+    ggplot2,
+    tidyr,
+    readxl,
+    stringr,
+    readr,
+    shinyAce,
+    rlang,
+    shinyWidgets,
+    purrr,
+    tools,
+    DT,
+    config,
+    magrittr,
+    methods
+RoxygenNote: 7.0.1
+Depends: 
+    dplyr

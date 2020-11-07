@@ -1,5 +1,12 @@
-server <- function(input, output, session) {
-# INPUT ------------------------------------------------------------------------
+#' The application server-side
+#'
+#' @param input,output,session Internal parameters for {shiny}.
+#' @import shiny ggplot2
+#' @noRd
+app_server <- function(input, output, session) {
+  
+  cnf <- config::get()
+  # INPUT ------------------------------------------------------------------------
   df_initial <- reactiveVal()
   
   observeEvent(input$preload_select, {
@@ -38,27 +45,27 @@ server <- function(input, output, session) {
     names(df_initial())[!(names(df_initial()) %in% input$which_cat)]
   )
   final_vars_cate <- reactive(input$which_cat)
-
+  
   df_final <- reactive({
     isolate(df_initial()) %>% 
-      mutate_at(vars(final_vars_cate()), as.factor)
+      dplyr::mutate_at(vars(final_vars_cate()), as.factor)
   })
-
-# BUILD CODE ----------------------------------------------------------
+  
+  # BUILD CODE ----------------------------------------------------------
   code_graph <- reactive({
     
     geom_is_filled <- input$viztype %in% cnf$specials$geoms$require_fill
     
     # aesthetics ----
     # a list of expressions for mapping of `x`, `y`, `color`, `shape`, `size`
-    aesthetics <- exprs(y = !!sym(input$y_var))
+    aesthetics <- rlang::exprs(y = !!sym(input$y_var))
     
     if (input$x_var != "NA"){
       aesthetics$x <- expr(!!sym(input$x_var))
     } else {
       aesthetics$x <- expr(NA)
     }
-      
+    
     if (input$group != "NA") {
       if (geom_is_filled){
         aesthetics$fill <- expr(!!sym(input$group))
@@ -76,7 +83,7 @@ server <- function(input, output, session) {
         && (input$shape != "NA")){
       aesthetics$shape <- expr(!!sym(input$shape))
     }
-  
+    
     if (input$viztype %in% cnf$specials$geoms$deactivate_y){
       showNotification("Histograms do not use the Y axis")
       aesthetics$y <- NULL
@@ -84,11 +91,11 @@ server <- function(input, output, session) {
     
     first_line_code <- expr(
       ggplot2::ggplot(df, aes(!!!aesthetics))
-      )
+    )
     
     # geom ----
     geom_code <- {
-      geom_args <- exprs()
+      geom_args <- rlang::exprs()
       
       if (input$viztype %in% cnf$specials$geoms$allow_bins){
         geom_args$bins <- expr(!!input$bins)
@@ -104,22 +111,22 @@ server <- function(input, output, session) {
         (!!sym(input$viztype))(!!!geom_args)
       )
     }
-
+    
     # stats ----
     stats_code <- if ((input$viztype %in% cnf$specials$geoms$allow_regression)
-      && (input$show_regression_line == TRUE)){
+                      && (input$show_regression_line == TRUE)){
       expr(stat_smooth(method=!!input$smooth_func))
     }
-
+    
     # facet ----
     facet_code <- if (input$facet_row != "." || input$facet_col != "."){
       
-      facet_args <- exprs(!!sym(input$facet_row) ~ !!sym(input$facet_col))
+      facet_args <- rlang::exprs(!!sym(input$facet_row) ~ !!sym(input$facet_col))
       
       x_free <- input$facet_free_x
       y_free <- input$facet_free_y
       
-      scales <- case_when(
+      scales <- dplyr::case_when(
         sum(x_free, y_free) == 0 ~ "fixed",
         sum(x_free, y_free) == 2 ~ "free",
         x_free == TRUE && y_free == FALSE ~ "free_x",
@@ -134,10 +141,10 @@ server <- function(input, output, session) {
         (!!sym(input$facet_type))(!!!facet_args)
       )
     }
-
+    
     # coord ----
     coord_code <- {
-      coord_args <- exprs()
+      coord_args <- rlang::exprs()
       
       if (input$coord %in% cnf$specials$coord$allow_origin){
         if (input$include_x_origin == TRUE){
@@ -152,7 +159,7 @@ server <- function(input, output, session) {
         coord_args$theta <- expr(!!input$polar_coord_type)
       }
       
-      if (input$coord == "coord_cartesian" && is_empty(coord_args)){
+      if (input$coord == "coord_cartesian" && purrr::is_empty(coord_args)){
         NULL
       } else {
         expr(
@@ -163,13 +170,13 @@ server <- function(input, output, session) {
     
     # labs ----
     labs_code <- {
-      labs_args <- exprs()
+      labs_args <- rlang::exprs()
       if (input$lab_title != "") labs_args$title <- expr(!!input$lab_title)
       if (input$lab_x != "") labs_args$x <- expr(!!input$lab_x)
       if (input$lab_y != "") labs_args$y <- expr(!!input$lab_y)
       if (input$lab_caption != "") labs_args$caption <- expr(!!input$lab_caption)
       
-      if (!is_empty(labs_args)){
+      if (!purrr::is_empty(labs_args)){
         expr(labs(!!!labs_args))
       }
     }
@@ -180,13 +187,13 @@ server <- function(input, output, session) {
         (!!sym(input$theme_style))()
       )
     }
-      
-
+    
+    
     # theme: palette ----
     theme_palette_code <- if (input$group != "NA" && input$color_palette != "ggplot2 default") {
-      palette_args <- exprs()
+      palette_args <- rlang::exprs()
       
-      custom_palettes <- flatten(cnf$palettes$custom)
+      custom_palettes <- purrr::flatten(cnf$palettes$custom)
       
       if (input$color_palette %in% names(custom_palettes)){
         palette_args$values <- expr(
@@ -216,7 +223,7 @@ server <- function(input, output, session) {
     
     # theme: elements ----
     theme_elements_code <- {
-      theme_elements_args <- exprs()
+      theme_elements_args <- rlang::exprs()
       
       if (input$pos_legend != "right"){
         theme_elements_args$legend.position <- expr(!!input$pos_legend)
@@ -239,7 +246,7 @@ server <- function(input, output, session) {
         theme_elements_args$axis.ticks.y <- expr(element_blank())
       }
       
-      if (!is_empty(theme_elements_args)){
+      if (!purrr::is_empty(theme_elements_args)){
         expr(theme(!!!theme_elements_args))
       }
     }
@@ -255,12 +262,12 @@ server <- function(input, output, session) {
       theme_style_code,
       theme_palette_code,
       theme_elements_code
-      )
-
+    )
+    
     all_layers_code %>% 
-      discard(is_empty) %>% 
+      purrr::discard(purrr::is_empty) %>% 
       # take all non-empty parts of `all_layers_code` and put a `+` between them
-      reduce(function(x,y) expr(!!enexpr(x) + !!enexpr(y)))
+      purrr::reduce(function(x,y) expr(!!enexpr(x) + !!enexpr(y)))
   })
   
   # OUTPUT -----------------------------------------------------------------------
@@ -283,16 +290,16 @@ server <- function(input, output, session) {
     
     req(input$ace_graph)
     
-    eval_tidy(
-      parse_expr(input$ace_graph), 
+    rlang::eval_tidy(
+      rlang::parse_expr(input$ace_graph), 
       data = list(df = df_final())
       # , 
       # env = safe_ggplot_env
-      )
+    )
   })
   
   output$out_ggplot <- renderPlot(evaluated_graph())
-
+  
   # download pdf ------
   output$download_plot_PDF <- downloadHandler(
     filename = function(){
@@ -307,19 +314,19 @@ server <- function(input, output, session) {
     },
     contentType = "application/pdf"
   )
-
+  
   # OBSERVERS --------------------------------------------------------------------
   # update initial categorical / continuous vars in `which_cat` -----
   observeEvent(df_initial(), {
     updateMultiInput(session, "which_cat",
                      choices = names(df_initial()),
-                     selected = names(keep(df_initial(), is_categorical))
+                     selected = names(purrr::keep(df_initial(), is_categorical))
     )
   })
   
   # update with output of `which_cat` -----------------------------
   observeEvent(df_final(),{
-
+    
     choices_cont <- from_vars_to_choice_list(final_vars_cont())
     choices_cate <-  from_vars_to_choice_list(final_vars_cate())
     
@@ -333,7 +340,7 @@ server <- function(input, output, session) {
       session, "y_var", 
       choices = list(Continuous = choices_cont),
       selected = ifelse(length(choices_cont) > 1, choices_cont[2], choices_cont[1])
-      )
+    )
     
     updateSelectInput(session, "group",  choices = list(
       `Choose no variable` = list(NA),
@@ -364,67 +371,67 @@ server <- function(input, output, session) {
   
   # update text in ACE editor -------
   observeEvent(code_graph(), {
-    updateAceEditor(
+    shinyAce::updateAceEditor(
       session = session, 
       editorId = "ace_graph", 
-      expr_text(code_graph())
+      rlang::expr_text(code_graph())
     )
   })
   
   # toggle content in UI -------------
   observe({
-    toggle("toggle_y_var", 
+    shinyjs::toggle("toggle_y_var", 
            condition = !(input$viztype %in% cnf$specials$geoms$deactivate_y), 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_size", 
+    shinyjs::toggle("toggle_size", 
            condition = input$viztype %in% cnf$specials$geoms$allow_size, 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_shape", 
+    shinyjs::toggle("toggle_shape", 
            condition = input$viztype %in% cnf$specials$geoms$allow_shape, 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_position", 
+    shinyjs::toggle("toggle_position", 
            condition = input$viztype %in% cnf$specials$geoms$allow_position, 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_regression", 
+    shinyjs::toggle("toggle_regression", 
            condition = input$viztype %in% cnf$specials$geoms$allow_regression, 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_smooth_func", 
+    shinyjs::toggle("toggle_smooth_func", 
            condition = (input$viztype %in% cnf$specials$geoms$allow_regression 
                         && input$show_regression_line), 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_bins", 
+    shinyjs::toggle("toggle_bins", 
            condition = input$viztype %in% cnf$specials$geoms$allow_bins, 
            anim = TRUE)
   })
-
+  
   observe({
-    toggle("toggle_coord_thetha", 
+    shinyjs::toggle("toggle_coord_thetha", 
            condition = input$coord %in% cnf$specials$coord$allow_thetha, 
            anim = TRUE)
   })
   
   observe({
-    toggle("toggle_coord_origin", 
+    shinyjs::toggle("toggle_coord_origin", 
            condition = input$coord %in% cnf$specials$coord$allow_origin, 
            anim = TRUE)
   })
-  
+
 }
