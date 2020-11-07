@@ -5,7 +5,7 @@
 #' @noRd
 app_ui <- function(request) {
   
-  cnf <- config::get()
+  cnf <- config::get(file = get_inst_file("config.yml"))
   
   tab_panel_geom <- 
     tabPanel(title = "Geometry",

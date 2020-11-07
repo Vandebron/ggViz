@@ -5,7 +5,7 @@
 #' @noRd
 app_server <- function(input, output, session) {
   
-  cnf <- config::get()
+  cnf <- config::get(file = get_inst_file("config.yml"))
   # INPUT ------------------------------------------------------------------------
   df_initial <- reactiveVal()
   

@@ -5,10 +5,7 @@
 #' @importFrom methods getGroupMembers
 run_app <- function() {
   
-  cnf <- config::get()
-  
   safe_ggplot_env <- {
-    
     safe_base_functions_names <- c(
       getGroupMembers("Math"),
       getGroupMembers("Arith"),

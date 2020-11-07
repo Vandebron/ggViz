@@ -33,5 +33,6 @@ Imports:
     DT,
     config,
     magrittr,
-    methods
+    methods,
+    pkgload
 RoxygenNote: 7.0.1
