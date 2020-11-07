@@ -292,9 +292,8 @@ app_server <- function(input, output, session) {
     
     rlang::eval_tidy(
       rlang::parse_expr(input$ace_graph), 
-      data = list(df = df_final())
-      # , 
-      # env = safe_ggplot_env
+      data = list(df = df_final()), 
+      env = generate_safe_env()
     )
   })
   
