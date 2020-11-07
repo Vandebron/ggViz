@@ -25,7 +25,7 @@ mod_ace_editor_ui <- function(id){
 #' @noRd 
 mod_ace_editor_server <- function(id, input_list, code) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     observeEvent(code(), {
       shinyAce::updateAceEditor(

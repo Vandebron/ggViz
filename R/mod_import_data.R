@@ -33,7 +33,7 @@ mod_import_data_ui <- function(id){
 #' @noRd 
 mod_import_data_server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     datasets <- config::get("datasets", file = get_inst_file("config.yml"))
     

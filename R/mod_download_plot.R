@@ -40,7 +40,7 @@ mod_download_plot_ui <- function(id){
 #' @noRd 
 mod_download_plot_server <- function(id, plot) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     output$download_plot_pdf <- downloadHandler(
       filename = function(){

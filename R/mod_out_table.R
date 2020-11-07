@@ -19,7 +19,7 @@ mod_out_table_ui <- function(id){
 #' @noRd 
 mod_out_table_server <- function(id, input_list) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     output$out_table <- DT::renderDT({
       DT::datatable(

@@ -16,7 +16,7 @@ mod_out_plot_ui <- function(id){
 #' @noRd 
 mod_out_plot_server <- function(id, plot) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     output$out_ggplot <- renderPlot(plot())
     })

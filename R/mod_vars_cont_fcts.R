@@ -29,7 +29,7 @@ mod_vars_cont_fcts_ui <- function(id){
 #' @noRd 
 mod_vars_cont_fcts_server <- function(id, input_list) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     observeEvent(input_list()$df, {
       updateMultiInput(session, "which_cat",

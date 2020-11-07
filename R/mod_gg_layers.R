@@ -92,7 +92,7 @@ mod_gg_layers_ui <- function(id){
     tags$div(
       id = ns("toggle_coord_thetha"),
       radioGroupButtons(
-        inputId = "polar_coord_type",
+        inputId = ns("polar_coord_type"),
         label = "Polar coordinate axis", 
         choices = cnf$choices$coordinates_axis,
         selected = cnf$choices$coordinates_axis[2]
@@ -192,7 +192,7 @@ mod_gg_layers_ui <- function(id){
 #' @noRd 
 mod_gg_layers_server <- function(id, input_list) {
   moduleServer(id, function(input, output, session) {
-    ns <- session
+    ns <- session$ns
     
     cnf <- config::get(file = get_inst_file("config.yml"))
     
@@ -201,8 +201,6 @@ mod_gg_layers_server <- function(id, input_list) {
     input_viztype <- reactive(input$viztype)
     
     first_line_code <- reactive({
-      # aesthetics ----
-      # a list of expressions for mapping of `x`, `y`, `color`, `shape`, `size`
       aesthetics <- rlang::exprs(y = !!sym(input$y_var))
       
       if (input$x_var != "NA"){
@@ -348,7 +346,7 @@ mod_gg_layers_server <- function(id, input_list) {
         } else {
           palette_args$palette <- expr(!!input$color_palette)
           funcion_name_suffix <- ifelse(
-            input$group %in% final_vars_cate(), 
+            input$group %in% input_list()$cate_vars, 
             "brewer", 
             "distiller"
           )
