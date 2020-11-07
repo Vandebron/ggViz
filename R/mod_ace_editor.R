@@ -1,7 +1,5 @@
 #' mod_ace_editor UI Function
 #'
-#' @description A shiny Module.
-#'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
@@ -48,9 +46,6 @@ mod_ace_editor_server <- function(id, input_list, code) {
       )
     })
     
-    
-    
     evaluated_graph
-    
     })
 }

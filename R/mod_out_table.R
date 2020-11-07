@@ -1,7 +1,5 @@
 #' mod_out_table UI Function
 #'
-#' @description A shiny Module.
-#'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
@@ -35,6 +33,5 @@ mod_out_table_server <- function(id, input_list) {
         )
       )
     })
-    
-    })
+  })
 }

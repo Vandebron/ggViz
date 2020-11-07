@@ -1,29 +1,29 @@
 #' mod_import_data UI Function
 #'
-#' @description A shiny Module.
-#'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
 mod_import_data_ui <- function(id){
   ns <- NS(id)
   
-  cnf <- config::get(file = get_inst_file("config.yml"))
+  datasets <- config::get("datasets", file = get_inst_file("config.yml"))
   
   box(width = 12, 
       title = "Data",
-      selectInput(ns("preload_select"), 
-                  "Choose preloaded dataset",
-                  names(cnf$datasets)
+      selectInput(
+        ns("preload_select"), 
+        "Choose preloaded dataset",
+        names(datasets)
       ),
-      fileInput(ns("file_input"), 
-                "Or upload file",
-                accept = c(
-                  "text/csv", 
-                  "application/vnd.ms-excel", 
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                ),
-                placeholder = "CSV or EXCEL file"
+      fileInput(
+        ns("file_input"),
+        "Or upload file",
+        accept = c(
+          "text/csv", 
+          "application/vnd.ms-excel", 
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          ),
+        placeholder = "CSV or EXCEL file"
       )
   )
 }
@@ -35,12 +35,12 @@ mod_import_data_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- session
     
-    cnf <- config::get(file = get_inst_file("config.yml"))
+    datasets <- config::get("datasets", file = get_inst_file("config.yml"))
     
     df <- reactiveVal()
     
     observeEvent(input$preload_select, {
-      x <- eval(cnf$datasets[[input$preload_select]])
+      x <- eval(datasets[[input$preload_select]])
       df(x)
     })
     
@@ -65,7 +65,6 @@ mod_import_data_server <- function(id) {
     })
     
     reactive({
-      
       original_cate_vars <- names(purrr::keep(df(), is_categorical))
       original_cont_vars <- names(df())[!(names(df()) %in% original_cate_vars)]
       

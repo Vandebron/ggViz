@@ -1,7 +1,5 @@
 #' mod_vars_cont_fcts UI Function
 #'
-#' @description A shiny Module.
-#'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
 #' @noRd 
@@ -23,7 +21,6 @@ mod_vars_cont_fcts_ui <- function(id){
           selected_header = 'Categorical:'
         )
       )
-      
   )
 }
     
@@ -41,9 +38,10 @@ mod_vars_cont_fcts_server <- function(id, input_list) {
       )
     })
     
-    final_list <- eventReactive(input$which_cat, {
+    eventReactive(input$which_cat, {
       
-      final_cont_vars <- names(input_list()$df)[!(names(input_list()$df) %in% input$which_cat)]
+      final_cont_vars <- 
+        names(input_list()$df)[!(names(input_list()$df) %in% input$which_cat)]
       final_cate_vars <- input$which_cat
       
       df_final <- dplyr::mutate_at(
@@ -58,8 +56,5 @@ mod_vars_cont_fcts_server <- function(id, input_list) {
         cate_vars = final_cate_vars
         )
       })
-    
-    final_list
-    
     })
 }

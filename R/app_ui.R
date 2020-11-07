@@ -4,24 +4,7 @@
 #' @import shiny shinydashboard shinyWidgets ggplot2
 #' @noRd
 app_ui <- function(request) {
-  
-  cnf <- config::get(file = get_inst_file("config.yml"))
-  
-  # BOXES ----------------------------------------------------------------
 
-  
-  # box_code <- 
-  #   box(width = 8, 
-  #       title = "Code within", 
-  #       collapsible = TRUE, 
-  #       collapsed = TRUE,
-  #       shinyAce::aceEditor("ace_graph", height = 200, mode = "r", wordWrap = TRUE)
-  #   )
-  
-  box_download <- 
-    
-  
-  # PUT TOGETHER -----------------------------------------------------------------
   dashboardPage(
     dashboardHeader(title = "ggVIZ"),
     dashboardSidebar(disable = TRUE),
