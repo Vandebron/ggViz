@@ -21,7 +21,7 @@ run_app <- function() {
       purrr::map(safe_base_functions_names, ~ get(., "package:base")) %>% 
       purrr::set_names(safe_base_functions_names) 
     
-    pipe_function <- list(`%>%` = get("%>%", "package:dplyr"))
+    pipe_function <- list(`%>%` = "%>%")
     
     ggplot_functions <- as.list(environment(ggplot2::ggplot))
     dplyr_functions <- as.list(environment(dplyr::select))

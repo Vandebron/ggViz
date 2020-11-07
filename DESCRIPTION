@@ -35,5 +35,3 @@ Imports:
     magrittr,
     methods
 RoxygenNote: 7.0.1
-Depends: 
-    dplyr
