@@ -8,7 +8,7 @@ from_vars_to_choice_list <- function(x){
   x
 }
 
-get_inst_file <- function(local_path, package = pkgload::pkg_name()){
+get_inst_file <- function(local_path, package = "ggViz"){
   path <- system.file(local_path, package = package)
   
   if (nchar(path) == 0) { 
@@ -24,7 +24,7 @@ get_inst_file <- function(local_path, package = pkgload::pkg_name()){
   path
 }
 
-read_inst_rds <- function(local_path, package = pkgload::pkg_name()){
+read_inst_rds <- function(local_path, package = "ggViz"){
   file <- get_inst_file(local_path, package)
   readRDS(file)
 }
