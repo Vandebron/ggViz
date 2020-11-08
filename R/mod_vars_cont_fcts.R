@@ -46,7 +46,7 @@ mod_vars_cont_fcts_server <- function(id, input_list) {
       
       df_final <- dplyr::mutate_at(
         input_list()$df,
-        input_list()$cate_vars,
+        final_cate_vars,
         as.factor
         )
       
