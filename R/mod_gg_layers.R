@@ -70,13 +70,13 @@ mod_gg_layers_ui <- function(id){
     ),
     tags$div(
       id = ns("toggle_smooth_func"),
-      selectInput("smooth_func", 
+      selectInput(ns("smooth_func"), 
                   "Smoothening function",
                   choices = cnf$choices$regression)
     ),
     tags$div(
       id = ns("toggle_bins"),
-      sliderInput("bins", 
+      sliderInput(ns("bins"), 
                   "Number of histogram bins", 
                   min = 10, max = 100, value = 30, step = 1)
     )
@@ -217,17 +217,17 @@ mod_gg_layers_server <- function(id, input_list) {
         }
       }
       
-      if ((input_viztype() %in% cnf$specials$geoms$allow_size)
+      if ((input$viztype %in% cnf$specials$geoms$allow_size)
           && (input$size != "NA")){
         aesthetics$size <- expr(!!sym(input$size))
       }
       
-      if ((input_viztype() %in% cnf$specials$geoms$allow_shape)
+      if ((input$viztype %in% cnf$specials$geoms$allow_shape)
           && (input$shape != "NA")){
         aesthetics$shape <- expr(!!sym(input$shape))
       }
       
-      if (input_viztype() %in% cnf$specials$geoms$deactivate_y){
+      if (input$viztype %in% cnf$specials$geoms$deactivate_y){
         showNotification("Histograms do not use the Y axis")
         aesthetics$y <- NULL
       }
@@ -240,23 +240,23 @@ mod_gg_layers_server <- function(id, input_list) {
     geom_code <- reactive({
       geom_args <- rlang::exprs()
       
-      if (input_viztype() %in% cnf$specials$geoms$allow_bins){
+      if (input$viztype %in% cnf$specials$geoms$allow_bins){
         geom_args$bins <- expr(!!input$bins)
       } 
       
-      if (input_viztype() %in% cnf$specials$geoms$allow_position){
+      if (input$viztype %in% cnf$specials$geoms$allow_position){
         geom_args$position <- expr(!!input$position)
       } 
       
       if (input$alpha_05 == TRUE) geom_args$alpha <- expr(0.5)
       
       expr(
-        (!!sym(input_viztype()))(!!!geom_args)
+        (!!sym(input$viztype))(!!!geom_args)
       )
     })
     
     stats_code <- reactive({
-      if ((input_viztype() %in% cnf$specials$geoms$allow_regression)
+      if ((input$viztype %in% cnf$specials$geoms$allow_regression)
                         && (input$show_regression_line == TRUE)){
         expr(stat_smooth(method=!!input$smooth_func))
       }
@@ -416,44 +416,44 @@ mod_gg_layers_server <- function(id, input_list) {
     
     observe({
       shinyjs::toggle("toggle_y_var",
-                      condition = !(input_viztype() %in% cnf$specials$geoms$deactivate_y),
+                      condition = !(input$viztype %in% cnf$specials$geoms$deactivate_y),
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_size",
-                      condition = input_viztype() %in% cnf$specials$geoms$allow_size,
+                      condition = input$viztype %in% cnf$specials$geoms$allow_size,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_shape",
-                      condition = input_viztype() %in% cnf$specials$geoms$allow_shape,
+                      condition = input$viztype %in% cnf$specials$geoms$allow_shape,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_position",
-                      condition = input_viztype() %in% cnf$specials$geoms$allow_position,
+                      condition = input$viztype %in% cnf$specials$geoms$allow_position,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_regression",
-                      condition = input_viztype() %in% cnf$specials$geoms$allow_regression,
+                      condition = input$viztype %in% cnf$specials$geoms$allow_regression,
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_smooth_func",
-                      condition = (input_viztype() %in% cnf$specials$geoms$allow_regression
+                      condition = (input$viztype %in% cnf$specials$geoms$allow_regression
                                    && input$show_regression_line),
                       anim = TRUE)
     })
 
     observe({
       shinyjs::toggle("toggle_bins",
-                      condition = input_viztype() %in% cnf$specials$geoms$allow_bins,
+                      condition = input$viztype %in% cnf$specials$geoms$allow_bins,
                       anim = TRUE)
     })
 
