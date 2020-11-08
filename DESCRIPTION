@@ -1,0 +1,41 @@
+Package: ggViz
+Title: Grammar of Graphics UI
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Carlos",
+           family = "Varela Martin",
+           role = c("aut", "cre"),
+           email = "carlosmartin@vanebron.nl")
+Description: 
+    Shiny app to build `ggplot` visualizations using a UI that mimics the 
+    layers of information used by the "Grammar of Graphics" approach. 
+    The app is intended as a didactic tool, and can also be used to ease data
+    visualization of csv or excel files in general.
+    `ggplot` code employed to generate visualizations is made available, and the
+    resulting plots can be downloaded.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    shiny,
+    shinydashboard,
+    shinyjs,
+    ggplot2,
+    tidyr,
+    readxl,
+    stringr,
+    readr,
+    shinyAce,
+    rlang,
+    shinyWidgets,
+    purrr,
+    tools,
+    DT,
+    config,
+    magrittr,
+    methods,
+    pkgload,
+    dplyr
+RoxygenNote: 7.0.1
+URL: https://github.com/vandebron/ggviz
+BugReports: https://github.com/vandebron/ggviz/issues
