@@ -1,8 +1,6 @@
 # ggViz
 
-Grammar of Graphics in Shiny
-
-----
+> Grammar of Graphics in Shiny
 
 `ggViz` allows to 
 
@@ -12,4 +10,18 @@ Grammar of Graphics in Shiny
 - See, copy and edit in real time the `ggplot` code that generates the graph.
 - Download your graphs.
 
-[Deployed version](https://cvmartin.shinyapps.io/ggviz/)
+## Access deployed version
+
+[Here](https://cvmartin.shinyapps.io/ggviz/) you can find the version deployed in shinyapps.io
+
+## Use it locally
+
+You can install the package directly from github:
+
+```
+remotes::install_github("Vandebron/ggViz@main")
+```
+And run it with 
+```
+ggViz::run_app()
+```
