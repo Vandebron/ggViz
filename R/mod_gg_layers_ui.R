@@ -44,7 +44,7 @@ mod_gg_layers_ui <- function(id){
              tags$div(
                id = ns("toggle_position"),
                radioGroupButtons(
-                 inputId = "position",
+                 inputId = ns("position"),
                  label = "Geom grouping position", 
                  choices = cnf$choices$positions
                )
